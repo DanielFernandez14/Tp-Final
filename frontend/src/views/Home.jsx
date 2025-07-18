@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 import { Layout } from "../components/Layout"
-import { getProducts, deleteProduct } from "../services/products"
+import { getProducts, deleteProduct, searchProducts } from "../services/products"
 import { useAuth } from "../context/AuthContext"
 
 const Home = () => {
   const [products, setProducts] = useState([])
-
+  const [searchTerm, setSearchTerm] = useState("")
   const { user } = useAuth()
 
   const fetchProducts = async () => {
@@ -29,6 +29,26 @@ const Home = () => {
     }
   }
 
+  const handleLiveSearch = async (value) => {
+    const trimmed = value.trim()
+    if (trimmed === "") {
+      fetchProducts()
+      return
+    }
+
+    const response = await searchProducts(trimmed)
+    const json = await response.json()
+
+    if (response.ok) {
+      setProducts(json.data)
+    }
+  }
+
+  const clearSearch = async () => {
+    setSearchTerm("")
+    fetchProducts()
+  }
+
   useEffect(() => {
     fetchProducts()
   }, [])
@@ -37,6 +57,22 @@ const Home = () => {
     <Layout>
       <h1>Bienvenido a nuestra tienda de productos artesanales</h1>
       <p>Descubrí nuestra selección exclusiva de productos únicos hechos a mano. Calidad y diseño en cada detalle.</p>
+
+      <div>
+        <input
+          type="text"
+          placeholder="Buscar producto por nombre"
+          value={searchTerm}
+          onChange={(e) => {
+            const value = e.target.value
+            setSearchTerm(value)
+            handleLiveSearch(value) 
+          }}
+        />
+        <button onClick={() => handleLiveSearch(searchTerm)}>Buscar</button>
+        <button onClick={clearSearch}>Limpiar búsqueda</button>
+      </div>
+
       <section>
         {
           products.map(product => (
