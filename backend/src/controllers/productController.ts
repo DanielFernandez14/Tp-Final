@@ -87,4 +87,21 @@ const updateProduct = async (req: Request, res: Response): Promise<any> => {
   }
 }
 
-export { getAllProducts, addNewProduct, deleteProduct, updateProduct }
+const searchProducts = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { name } = req.query;
+    if (!name || typeof name !== "string") {
+      return res.status(400).json({ message: "Falta parámetro de búsqueda" });
+    }
+
+    const regex = new RegExp(name, "i");
+    const products = await Product.find({ name: regex });
+
+    res.status(200).json({ success: true, data: products });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error al buscar productos" });
+  }
+};
+
+
+export { getAllProducts, addNewProduct, deleteProduct, updateProduct, searchProducts }
